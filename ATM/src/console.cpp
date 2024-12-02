@@ -1,9 +1,16 @@
 #include "console.hpp"
 
+atm::Console *atm::console()
+{
+    return &__console;
+}
+
 void atm::Console::setup_console()
 {
     // prepare the console
     cl_init();
+    setup_resize_handler();
+    std::cout.setf(std::ios::unitbuf); // disable buffering for output
 }
 
 void atm::Console::cl_init()
@@ -40,41 +47,6 @@ void atm::Console::cl_reset()
 #endif
 }
 
-void atm::Console::read_input()
-{
-    // we will read character by character and read until a newline
-    // With each character, we may utilize some characters for special
-    // commands that the Console class may execute
-    console_print(input_symbol_to_show);
-    bool terminate = false;
-    while (!terminate)
-    {
-        char current;
-#ifdef _WIN32
-        current = _getch();
-#else
-        if (read(STDIN_FILENO, &current, 1) < 0)
-        {
-            console_println("Failed to read input.");
-            cl_reset();
-            exit(EXIT_FAILURE);
-        }
-#endif
-        console_println(std::string("Read character ") + current);
-        switch (current)
-        {
-        case '\n':
-            terminate = true;
-            break;
-        default:
-            current_input += current;
-            console_print(std::string({current}));
-            break;
-        }
-    }
-    console_println("Input read: " + current_input);
-}
-
 void atm::Console::console_println(std::string msg)
 {
     // specifically for writing when in raw mode
@@ -92,16 +64,106 @@ atm::Console::~Console()
     cl_reset();
 }
 
-std::string atm::Console::get_input()
+void atm::Console::print_to_first_line(std::string msg)
 {
-    std::string inp;
-    if (current_input.empty())
+    first_line += msg;
+}
+
+void atm::Console::print_to_first_line(char c)
+{
+    first_line += c;
+}
+
+void atm::Console::print_to_rest(std::string msg)
+{
+    // Each message is going to be one line long
+    body.push_back(msg);
+}
+
+void atm::Console::print_to_rest(char c)
+{
+    body.push_back(std::string({c}));
+}
+
+void atm::Console::render()
+{
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+    int rows = get_console_rows();
+    if (rows >= body.size())
     {
-        read_input();
-        inp = current_input;
-        current_input.erase();
+        for (size_t i = 0; i < body.size(); i++)
+        {
+            console_println(body[i]);
+        }
+        for (size_t i = body.size(); i < rows-1; i++)
+        {
+            console_println("");
+        }
     }
     else
-        inp = current_input;
-    return inp;
+    {
+        for (size_t i = 0; i < rows - 1; i++)
+        {
+            console_println(body[i]);
+        }
+    }
+    console_print(first_line);
+}
+
+void atm::Console::flush()
+{
+    first_line.erase();
+    the_rest_of_the_body.erase();
+}
+
+int atm::Console::get_console_rows()
+{
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (!GetConsoleScreenBufferInfo(hStdOut, &csbi))
+    {
+        return -1;
+    }
+    return csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+#else
+    struct winsize w;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1)
+    {
+        return -1;
+    }
+    return w.ws_row;
+#endif
+}
+
+#ifdef _WIN32
+
+#else
+void atm::handle_resize(int rows)
+#endif
+{
+    __console.render();
+}
+
+void atm::Console::setup_resize_handler()
+{
+#ifdef _WIN32
+    SetConsoleCtrlHandler(handle_resize, TRUE);
+#else
+    struct sigaction sa;
+    sa.sa_handler = handle_resize;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+
+    if (sigaction(SIGWINCH, &sa, nullptr) == -1)
+    {
+        std::cerr << "Failed to set resize handler!" << std::endl;
+        cl_reset();
+        exit(EXIT_FAILURE);
+    }
+#endif
 }
