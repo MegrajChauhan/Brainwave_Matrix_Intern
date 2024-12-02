@@ -8,10 +8,10 @@ OUTPUT_DIR=build
 SOURCE_DIR=src
 PROGRAM=atm
 
-SOURCE_FILES:=
-FINAL_OUTPUT_FILE_NAMES:=
-DEPENDENCIES:=
 EXTRA_FLAGS=${addprefix -I, ${INCLUDE_PATH}}
+SOURCE_FILES=$(foreach path, $(SOURCE_DIR), $(wildcard $(path)/*.cpp))
+FINAL_OUTPUT_FILE_NAMES=$(patsubst $(SOURCE_DIR)/%.cpp, $(OUTPUT_DIR)/%.o, $(SOURCE_FILES))
+DEPENDENCIES=$(patsubst $(OUTPUT_DIR)/%.o, $(OUTPUT_DIR)/%.d, $(FINAL_OUTPUT_FILE_NAMES))
 
 all: preinit ${PROGRAM}
 
@@ -23,9 +23,6 @@ else
 		@echo "Building in RELEASE mode..."
 		COMPILER_FLAGS+=-O3
 endif
-	SOURCE_FILES=$(foreach path, $(SOURCE_DIR), $(wildcard $(path)/*.cpp))
-	FINAL_OUTPUT_FILE_NAMES=$(patsubst $(SOURCE_DIR)/%.cpp, $(OUTPUT_DIR)/%.o, $(SOURCE_FILES))
-	DEPENDENCIES=$(patsubst $(OUTPUT_DIR)/%.o, $(OUTPUT_DIR)/%.d, $(FINAL_OUTPUT_FILE_NAMES))
 
 create_dirs:
 	@mkdir -p $(OUTPUT_DIR)

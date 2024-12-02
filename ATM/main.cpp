@@ -1,6 +1,9 @@
-#include <iostream>
+#include "console.hpp"
 
 int main()
 {
-    std::cout << "Hello World\n";
+    atm::Console console;
+    console.setup_console();
+    std::string input = console.get_input();
+    return 0;
 }
