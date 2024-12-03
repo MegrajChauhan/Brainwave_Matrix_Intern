@@ -37,9 +37,20 @@ namespace fs = std::filesystem;
 
 namespace fetch
 {
+    /**
+     * This module expects that the user files are not meddled with, 
+     * deleted or duplicated.
+     */
+
+    // For simplicity sake(complexity already high due to the use of RAW mode),
+    // we will use variables like these to convey status
+    static bool _status = false;
+
     bool user_exists(accnum_t accnum);
 
     accounts::User fetch_user(accnum_t accum);
+
+    bool fetch_status();
 };
 
 #endif

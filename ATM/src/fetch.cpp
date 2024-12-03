@@ -8,15 +8,18 @@ bool fetch::user_exists(accnum_t accnum)
 
 accounts::User fetch::fetch_user(accnum_t accnum)
 {
+    accounts::User user;
+
     fs::path user_path = fs::current_path() / "users" / std::to_string(accnum);
     if (!fs::exists(user_path) || !fs::is_directory(user_path))
     {
-        throw std::runtime_error("User with account number " + std::to_string(accnum) + " does not exist.");
+        _status = false;
+        return user;
     }
 
-    accounts::User user;
     uint8_t account_type_byte;
-    size_t balance = 0, pin = 0;
+    double balance = 0;
+    size_t pin = 0;
     size_t username_length = 0;
     std::string user_name;
     std::time_t creation_date;
@@ -59,7 +62,7 @@ accounts::User fetch::fetch_user(accnum_t accnum)
                 transactions.read(reinterpret_cast<char *>(&trans.__sender), sizeof(accnum_t));
                 transactions.read(reinterpret_cast<char *>(&trans.__receiver), sizeof(accnum_t));
 
-                transactions.read(reinterpret_cast<char *>(&trans.__transaction_amount), sizeof(size_t));
+                transactions.read(reinterpret_cast<char *>(&trans.__transaction_amount), sizeof(double));
 
                 uint8_t type_byte;
                 transactions.read(reinterpret_cast<char *>(&type_byte), sizeof(type_byte));
@@ -73,4 +76,9 @@ accounts::User fetch::fetch_user(accnum_t accnum)
     }
     user = accounts::User(transactions_list, 0, pin, user_name, accnum, balance, account_type, creation_date);
     return user;
+}
+
+bool fetch::fetch_status()
+{
+    return _status;
 }

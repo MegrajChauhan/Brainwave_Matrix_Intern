@@ -25,7 +25,7 @@ char atm::getc()
 std::string atm::input()
 {
     Console *c = console();
-    c->flush(); // clear the old screen first
+    c->flush_first_line(); // clear the old input first
     current_input.erase();
     c->print_to_first_line(">>> ");
     c->render();

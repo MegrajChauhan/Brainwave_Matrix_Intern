@@ -14,7 +14,25 @@
 
 namespace API
 {
+    // The API will also act as a context and hold the current session
+    static accounts::User current_session;
+
+    bool log_in(accnum_t accnum, size_t pin);
     
+    bool log_out();
+
+    double get_balance();
+
+    bool withdraw(double amount);
+
+    bool deposit(double amount);
+
+    bool transfer(accnum_t target_accnum, double amount);
+
+    std::vector<accounts::Transaction> get_transaction_history();
+
+    bool session_active();
+
 };
 
 #endif

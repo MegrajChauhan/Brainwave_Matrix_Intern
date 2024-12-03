@@ -109,14 +109,19 @@ void atm::Console::render()
 #else
     system("clear");
 #endif
-    for (int i = body.size(); i < viewport.ed; i++)
-    {
-        body.push_back("");
-    }
-    for (std::string s : body)
-    {
-        console_println(s);
-    }
+    size_t upto = viewport.ed;
+    if (viewport.st < 0)
+        viewport.st = 0;
+    if (viewport.ed > body.size())
+        upto = body.size();
+
+    for (int i = viewport.st; i < upto; i++)
+        console_println(body[i]);
+
+    int padding_needed = viewport.ed - viewport.st - body.size();
+    for (int i = 0; i < padding_needed; i++)
+        console_println("");
+
     console_print(first_line);
 }
 
