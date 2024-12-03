@@ -11,6 +11,7 @@ void atm::Console::setup_console()
     cl_init();
     setup_resize_handler();
     std::cout.setf(std::ios::unitbuf); // disable buffering for output
+    update_viewport();
 }
 
 void atm::Console::cl_init()
@@ -108,24 +109,13 @@ void atm::Console::render()
 #else
     system("clear");
 #endif
-    int rows = get_console_rows();
-    if (rows >= body.size())
+    for (int i = body.size(); i < viewport.ed; i++)
     {
-        for (size_t i = 0; i < body.size(); i++)
-        {
-            console_println(body[i]);
-        }
-        for (size_t i = body.size(); i < rows - 2; i++)
-        {
-            console_println("|");
-        }
+        body.push_back("");
     }
-    else
+    for (std::string s : body)
     {
-        for (size_t i = 0; i < rows - 2; i++)
-        {
-            console_println(body[i]);
-        }
+        console_println(s);
     }
     console_print(first_line);
 }
@@ -162,7 +152,25 @@ int atm::Console::get_console_rows()
 void atm::handle_resize(int rows)
 #endif
 {
+    __console.update_viewport();
     __console.render();
+}
+
+void atm::Console::update_viewport()
+{
+    int row_count = __console.get_console_rows();
+
+    viewport.ed = row_count - 1;
+
+    // based on the size of the body
+    if ((row_count - 1) > body.size())
+        viewport.st = 0;
+    // we don't do anything else here
+}
+
+void atm::Console::flush_body()
+{
+    body.erase(body.begin(), body.end());
 }
 
 void atm::Console::setup_resize_handler()
@@ -194,4 +202,19 @@ void atm::Console::append_to_body_last_line(std::string msg)
 {
     if (!body.empty())
         body[body.size() - 1] += msg;
+}
+
+void atm::Console::viewport_shift(bool up, size_t shift_by)
+{
+    if (up)
+    {
+        viewport.st -= shift_by;
+        viewport.ed -= shift_by;
+    }
+    else
+    {
+        viewport.st += shift_by;
+        viewport.ed += shift_by;
+    }
+    render();
 }

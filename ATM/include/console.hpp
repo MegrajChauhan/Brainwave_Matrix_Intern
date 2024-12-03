@@ -28,12 +28,21 @@ namespace atm
      * The Console class represents what is to be printed to the console.
      * A basic renderer but just for text and the most basic of functionalities
      */
+
+    struct Viewport
+    {
+        size_t st, ed;
+    };
+
     class Console
     {
 
         // Two section of output pipeline
         std::string first_line;
         std::vector<std::string> body;
+
+        // Which index to which to show
+        Viewport viewport;
 
     public:
         Console() = default;
@@ -75,6 +84,10 @@ namespace atm
 
         void flush();
 
+        void update_viewport();
+
+        void viewport_shift(bool up, size_t shift_by);
+
         void setup_resize_handler();
 
         ~Console();
@@ -87,7 +100,7 @@ namespace atm
 #ifdef _WIN32
 
 #else
-        void handle_resize(int rows);
+    void handle_resize(int rows);
 #endif
 };
 

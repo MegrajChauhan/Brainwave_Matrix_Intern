@@ -25,11 +25,15 @@ namespace atm
 
     void up_arrow();
 
+    void down_arrow();
+
+    void left_arrow();
+
+    void right_arrow();
+
     void show_history();
 
     void wait();
-
-    void down_arrow();
 
     char getc();
 };

@@ -2,7 +2,7 @@
 
 void atm::print(std::string msg)
 {
-    console()->print_to_rest(msg);
+    console()->append_to_body_last_line(msg);
 }
 
 void atm::println(std::string msg)
@@ -87,37 +87,34 @@ void atm::add_command(std::string command_string, std::string command_desc)
 void atm::up_arrow()
 {
     if (history.empty() || place_in_history == 0)
-        return; // No more history to navigate upwards
-    
+        return;
+
     Console *c = console();
 
-    // Save the current input if we are navigating history for the first time
     if (place_in_history == history.size())
         current_input_temp = current_input;
 
-    place_in_history--; // Move up in history
-    c->overwrite_first_line(">>> " + history[place_in_history]); // Display the history entry
-    current_input = history[place_in_history]; // Update the current input
+    place_in_history--;
+    c->overwrite_first_line(">>> " + history[place_in_history]);
+    current_input = history[place_in_history];
 }
 
 void atm::down_arrow()
 {
     if (history.empty() || place_in_history >= history.size())
-        return; // No more history to navigate downwards
-    
+        return;
+
     Console *c = console();
 
-    place_in_history++; // Move down in history
-    
+    place_in_history++;
+
     if (place_in_history == history.size())
     {
-        // If at the end of history, restore the current input
         c->overwrite_first_line(">>> " + current_input_temp);
         current_input = current_input_temp;
     }
     else
     {
-        // Otherwise, show the next history entry
         c->overwrite_first_line(">>> " + history[place_in_history]);
         current_input = history[place_in_history];
     }
@@ -138,6 +135,12 @@ void atm::handle_escape_sequence()
     case 80:
         down_arrow();
         break;
+    case 75:
+        left_arrow();
+        break;
+    case 77:
+        right_arrow();
+        break;
     }
 #else
     switch (next)
@@ -153,6 +156,12 @@ void atm::handle_escape_sequence()
         case 'B':
             down_arrow();
             break;
+        case 'D':
+            left_arrow();
+            break;
+        case 'C':
+            right_arrow();
+            break;
         }
         break;
     }
@@ -164,7 +173,7 @@ void atm::show_history()
 {
     Console *c = console();
     c->flush();
-    for (auto line: history)
+    for (auto line : history)
     {
         c->print_to_rest(line);
     }
@@ -176,4 +185,16 @@ void atm::show_history()
 void atm::wait()
 {
     getc(); // ignore this
+}
+
+void atm::left_arrow()
+{
+    // scroll up
+    console()->viewport_shift(true, 1);
+}
+
+void atm::right_arrow()
+{
+    // scroll down
+    console()->viewport_shift(false, 1);
 }
