@@ -3,7 +3,7 @@
 
 CXX=g++
 COMPILER_FLAGS=-Wall -Wextra -MMD -MP
-INCLUDE_PATH=include utils
+INCLUDE_PATH=include utils include/backend
 OUTPUT_DIR=build
 SOURCE_DIR=src
 PROGRAM=atm

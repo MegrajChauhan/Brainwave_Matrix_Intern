@@ -34,7 +34,6 @@ namespace atm
         // Two section of output pipeline
         std::string first_line;
         std::vector<std::string> body;
-        std::string the_rest_of_the_body;
 
     public:
         Console() = default;
@@ -52,6 +51,19 @@ namespace atm
         void console_print(std::string msg);
 
         void print_to_first_line(std::string msg);
+
+        // remove the last character from the first line
+        void remove_from_fist_line();
+
+        void flush_first_line();
+
+        void flush_body();
+
+        void append_to_body_last_line(char c);
+
+        void append_to_body_last_line(std::string msg);
+
+        void overwrite_first_line(std::string msg);
 
         void print_to_first_line(char c);
 

@@ -85,6 +85,22 @@ void atm::Console::print_to_rest(char c)
     body.push_back(std::string({c}));
 }
 
+void atm::Console::remove_from_fist_line()
+{
+    if (!first_line.empty())
+        first_line.pop_back();
+}
+
+void atm::Console::flush_first_line()
+{
+    first_line.erase();
+}
+
+void atm::Console::overwrite_first_line(std::string msg)
+{
+    first_line = msg;
+}
+
 void atm::Console::render()
 {
 #ifdef _WIN32
@@ -99,14 +115,14 @@ void atm::Console::render()
         {
             console_println(body[i]);
         }
-        for (size_t i = body.size(); i < rows-1; i++)
+        for (size_t i = body.size(); i < rows - 2; i++)
         {
-            console_println("");
+            console_println("|");
         }
     }
     else
     {
-        for (size_t i = 0; i < rows - 1; i++)
+        for (size_t i = 0; i < rows - 2; i++)
         {
             console_println(body[i]);
         }
@@ -117,7 +133,7 @@ void atm::Console::render()
 void atm::Console::flush()
 {
     first_line.erase();
-    the_rest_of_the_body.erase();
+    body.erase(body.begin(), body.end());
 }
 
 int atm::Console::get_console_rows()
@@ -166,4 +182,16 @@ void atm::Console::setup_resize_handler()
         exit(EXIT_FAILURE);
     }
 #endif
+}
+
+void atm::Console::append_to_body_last_line(char c)
+{
+    if (!body.empty())
+        body[body.size() - 1] += c;
+}
+
+void atm::Console::append_to_body_last_line(std::string msg)
+{
+    if (!body.empty())
+        body[body.size() - 1] += msg;
 }
