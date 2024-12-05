@@ -32,6 +32,8 @@ namespace atm
 
     void wait();
 
+    std::string input_no_show();
+
     char getc();
 };
 

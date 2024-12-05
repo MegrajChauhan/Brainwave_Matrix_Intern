@@ -23,17 +23,25 @@ namespace API
 
     double get_balance();
 
-    bool withdraw(double amount);
-
     std::string get_username();
+
+    std::vector<accounts::Transaction> get_transaction_history();
+
+    accnum_t get_accnum();
+
+    std::time_t get_doc();
+
+    accounts::__account_t get_account_type();
+
+    bool withdraw(double amount);
 
     bool deposit(double amount);
 
     bool transfer(accnum_t target_accnum, double amount);
 
-    std::vector<accounts::Transaction> get_transaction_history();
-
     bool session_active();
+
+    std::string account_type_to_string(accounts::__account_t type);
 
 };
 

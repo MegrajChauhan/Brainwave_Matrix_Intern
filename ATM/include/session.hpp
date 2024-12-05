@@ -30,6 +30,8 @@ namespace atm
 
     void atm_help();
 
+    void atm_print_user_details();
+
 };
 
 #endif

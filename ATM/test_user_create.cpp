@@ -73,6 +73,7 @@ int main()
     create_user(1001, "Alice", 1234, 5000.0, accounts::__account_t::__SAVING);
     create_user(1002, "Bob", 5678, 3000.0, accounts::__account_t::__CHECKING);
     create_user(1003, "Charlie", 9876, 10000.0, accounts::__account_t::__BUSINESS_ACCOUNT);
+    create_user(1233, "Pradip", 1100, 10000000000.0, accounts::__account_t::__SAVING);
 
     std::cout << "User creation completed." << std::endl;
     return 0;

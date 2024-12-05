@@ -49,6 +49,8 @@ void atm::start_atm()
             atm_logout();
         else if (command == "help" || command == "HELP")
             atm_help();
+        else if (command == "status" || command == "STATUS")
+            atm_print_user_details();
         else
         {
             c->flush_body();
@@ -195,5 +197,25 @@ void atm::atm_help()
     c->print_to_rest("\tLogout as the current user");
     c->print_to_rest("");
     c->render();
-    atm::wait();
+    std::string curr;
+    while ((curr = atm::input_no_show()) != "q")
+        ;
+}
+
+void atm::atm_print_user_details()
+{
+    if (!API::session_active())
+    {
+        c->flush_body();
+        c->print_to_rest("Login first to see details");
+        c->render();
+        return;
+    }
+    c->flush_body();
+    c->print_to_rest("USERNAME: " + API::get_username());
+    c->print_to_rest("ACCOUNT NUMBER: " + std::to_string(API::get_accnum()));
+    c->print_to_rest("DATE OF CREATION: ");
+    c->print_to_rest("ACCOUNT TYPE: " + API::account_type_to_string(API::get_account_type()));
+    c->print_to_rest("BALANCE: " + std::to_string(API::get_balance()));
+    c->render();
 }

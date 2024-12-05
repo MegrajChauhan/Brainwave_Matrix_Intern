@@ -86,3 +86,31 @@ std::string API::get_username()
         return current_session.get_username();
     return "";
 }
+
+accnum_t API::get_accnum()
+{
+    return current_session.get_accnum();
+}
+
+std::time_t API::get_doc()
+{
+    return current_session.get_doc();
+}
+
+accounts::__account_t API::get_account_type()
+{
+    return current_session.get_account_type();
+}
+
+std::string API::account_type_to_string(accounts::__account_t type)
+{
+    switch (type)
+    {
+    case accounts::__account_t::__BUSINESS_ACCOUNT:
+        return "Business Account";
+    case accounts::__account_t::__CHECKING:
+        return "Checking Account";
+    case accounts::__account_t::__SAVING:
+        return "Saving Account";
+    }
+}
