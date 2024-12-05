@@ -29,8 +29,9 @@ accounts::User fetch::fetch_user(accnum_t accnum)
     fs::path metadata_file = user_path / "Metadata.bin";
     if (fs::exists(metadata_file))
     {
-        std::ifstream metadata(metadata_file, std::ios::binary);
-        if (metadata)
+        std::fstream metadata;
+        metadata.open(metadata_file.string(), std::ios::binary | std::ios::in);
+        if (metadata.is_open())
         {
             metadata.read(reinterpret_cast<char *>(&account_type_byte), sizeof(account_type_byte));
             account_type = static_cast<accounts::__account_t>(account_type_byte);
@@ -38,23 +39,25 @@ accounts::User fetch::fetch_user(accnum_t accnum)
             metadata.read(reinterpret_cast<char *>(&balance), sizeof(balance));
             metadata.read(reinterpret_cast<char *>(&pin), sizeof(pin));
 
-            metadata.read(reinterpret_cast<char *>(&username_length), 2);
+            metadata.read(reinterpret_cast<char *>(&username_length), 8);
 
-            char name[username_length];
+            char name[username_length+1];
             metadata.read(name, sizeof(name));
+            name[username_length] = 0;
             user_name = name;
 
             metadata.read(reinterpret_cast<char *>(&creation_date), sizeof(creation_date));
         }
+        metadata.close();
     }
 
     fs::path transactions_file = user_path / "Transactions.bin";
     if (fs::exists(transactions_file))
     {
-        std::ifstream transactions(transactions_file, std::ios::binary);
-        if (transactions)
+        std::fstream transactions;
+        transactions.open(transactions_file.string(), std::ios::binary | std::ios::in);
+        if (transactions.is_open())
         {
-
             while (transactions.peek() != EOF)
             {
                 accounts::Transaction trans;

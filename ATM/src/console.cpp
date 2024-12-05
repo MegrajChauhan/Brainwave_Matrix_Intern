@@ -109,19 +109,37 @@ void atm::Console::render()
 #else
     system("clear");
 #endif
-    size_t upto = viewport.ed;
-    if (viewport.st < 0)
-        viewport.st = 0;
-    if (viewport.ed > body.size())
-        upto = body.size();
+    size_t lines_to_print = 0;
+    size_t padding_lines = 0;
 
-    for (int i = viewport.st; i < upto; i++)
-        console_println(body[i]);
+    if (body.size() == 0)
+    {
+        lines_to_print = 0;
+        padding_lines = viewport.ed;
+    }
+    else if (body.size() - st_ind > viewport.ed)
+    {
+        lines_to_print = viewport.ed;
+    }
+    else
+    {
+        lines_to_print = body.size() - st_ind;
+        padding_lines = viewport.ed - lines_to_print;
+    }
 
-    int padding_needed = viewport.ed - viewport.st - body.size();
-    for (int i = 0; i < padding_needed; i++)
+    // Print the lines in the viewport range
+    for (size_t i = 0; i < lines_to_print; ++i)
+    {
+        console_println(body[st_ind + i]);
+    }
+
+    // Add padding lines if necessary
+    for (size_t i = 0; i < padding_lines; ++i)
+    {
         console_println("");
+    }
 
+    // Print the first line
     console_print(first_line);
 }
 
@@ -166,10 +184,6 @@ void atm::Console::update_viewport()
     int row_count = __console.get_console_rows();
 
     viewport.ed = row_count - 1;
-
-    // based on the size of the body
-    if ((row_count - 1) > body.size())
-        viewport.st = 0;
     // we don't do anything else here
 }
 
@@ -213,13 +227,13 @@ void atm::Console::viewport_shift(bool up, size_t shift_by)
 {
     if (up)
     {
-        viewport.st -= shift_by;
-        viewport.ed -= shift_by;
+        if (st_ind > 0)
+            st_ind--;
     }
     else
     {
-        viewport.st += shift_by;
-        viewport.ed += shift_by;
+        if (st_ind < (body.size() - 1))
+            st_ind++;
     }
     render();
 }

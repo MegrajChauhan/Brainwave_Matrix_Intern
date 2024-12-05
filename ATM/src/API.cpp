@@ -79,3 +79,10 @@ bool API::session_active()
 {
     return current_session.is_logged_in();
 }
+
+std::string API::get_username()
+{
+    if (current_session.is_logged_in())
+        return current_session.get_username();
+    return "";
+}

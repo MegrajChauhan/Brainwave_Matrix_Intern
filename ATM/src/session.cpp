@@ -47,7 +47,10 @@ void atm::start_atm()
             atm_login();
         else if (command == "logout" || command == "LOGOUT")
             atm_logout();
-        else{
+        else if (command == "help" || command == "HELP")
+            atm_help();
+        else
+        {
             c->flush_body();
             c->print_to_rest("Invalid Command!");
             c->render();
@@ -123,10 +126,11 @@ bool atm::atm_login()
     }
     else
         num = std::strtoul(command.c_str(), NULL, 10);
+    c->print_to_first_line(command);
     reverse_secret();
     c->print_to_rest("PIN: ");
-    reverse_secret();
     command = input();
+    reverse_secret();
 
     // don't mind the name
     if (!verify_account_num(command))
@@ -146,13 +150,21 @@ bool atm::atm_login()
         c->render();
         return false;
     }
+    c->flush_body();
+    c->print_to_rest("Successfully logged in as " + API::get_username());
+    c->render();
     return true;
 }
 
 bool atm::atm_logout()
 {
     if (API::session_active())
+    {
+        c->flush_body();
+        c->print_to_rest("Successfully logged out as " + API::get_username());
         API::log_out();
+        c->render();
+    }
     else
     {
         c->flush_body();
@@ -161,4 +173,27 @@ bool atm::atm_logout()
         return false;
     }
     return true;
+}
+
+void atm::atm_help()
+{
+    c->flush();
+    c->print_to_first_line("Press left-arrow to move down, right-arrow to move up else any key to exit");
+    c->print_to_rest("Navigation");
+    c->print_to_rest("In order to navigate the screen, if you cannot see anything than you can use the left and right arrow keys to navigate.");
+    c->print_to_rest("");
+    c->print_to_rest("The UP and DOWN arrow keys will help you navigate all of the commands you have previously entered.");
+    c->print_to_rest("");
+    c->print_to_rest("A list of all possible commands:");
+    c->print_to_rest("HELP, help");
+    c->print_to_rest("\tDisplay this help message");
+    c->print_to_rest("");
+    c->print_to_rest("LOGIN, login");
+    c->print_to_rest("\tLogin as a user by entering your Account number and password");
+    c->print_to_rest("");
+    c->print_to_rest("LOGOUT, logout");
+    c->print_to_rest("\tLogout as the current user");
+    c->print_to_rest("");
+    c->render();
+    atm::wait();
 }

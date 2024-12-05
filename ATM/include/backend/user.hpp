@@ -28,6 +28,7 @@ namespace accounts
 
     enum __transaction_t
     {
+        // Instead of the accouting terms "Credit" and "Debit"
         __SENDING,
         __RECEIVING,
         __WITHDRAWING,
@@ -41,6 +42,10 @@ namespace accounts
         double __transaction_amount;
         std::time_t __time_of_transaction;
         __transaction_t type;
+
+        Transaction(accnum_t anum, accnum_t snum, double traam, std::time_t tot, __transaction_t t) : __receiver(anum), __sender(snum), __transaction_amount(traam), __time_of_transaction(tot), type(t) {}
+
+        Transaction() = default;
     };
 
     class User
@@ -69,9 +74,17 @@ namespace accounts
          * to be taken in-between which is why this is a "simple" simulation
          */
 
-        void add_transaction(double amount,bool sending, accnum_t other);
+        void add_transaction(double amount, bool sending, accnum_t other);
 
         void add_transaction(Transaction transaction);
+
+        std::time_t get_doc();
+
+        __account_t get_account_type();
+
+        accnum_t get_accnum();
+
+        std::string get_username();
 
         bool log_in(size_t pin);
 

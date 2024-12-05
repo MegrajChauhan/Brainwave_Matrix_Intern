@@ -5,7 +5,6 @@
 
 namespace atm
 {
-    static std::unordered_map<std::string, std::string> all_commands;
     static std::vector<std::string> history;
     static size_t place_in_history = 0;
     static bool secret_entered = false;
@@ -18,8 +17,6 @@ namespace atm
     std::string input();
 
     void reverse_secret();
-
-    void add_command(std::string command_string, std::string command_desc);
 
     void handle_escape_sequence();
 

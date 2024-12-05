@@ -28,6 +28,8 @@ namespace atm
 
     bool atm_logout();
 
+    void atm_help();
+
 };
 
 #endif

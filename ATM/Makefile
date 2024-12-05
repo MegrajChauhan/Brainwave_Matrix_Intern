@@ -31,6 +31,7 @@ create_dirs:
 # Build the program
 $(PROGRAM): preinit $(FINAL_OUTPUT_FILE_NAMES)
 	$(CXX) $(COMPILER_FLAGS) ${EXTRA_FLAGS} main.cpp -o $(OUTPUT_DIR)/$(PROGRAM) $(FINAL_OUTPUT_FILE_NAMES)
+	$(CXX) $(COMPILER_FLAGS) ${EXTRA_FLAGS} test_user_create.cpp -o $(OUTPUT_DIR)/create_user $(FINAL_OUTPUT_FILE_NAMES)
 
 # Compile source files into object files
 $(OUTPUT_DIR)/%.o: $(SOURCE_DIR)/%.cpp

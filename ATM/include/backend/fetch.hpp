@@ -44,7 +44,7 @@ namespace fetch
 
     // For simplicity sake(complexity already high due to the use of RAW mode),
     // we will use variables like these to convey status
-    static bool _status = false;
+    static bool _status = true;
 
     bool user_exists(accnum_t accnum);
 

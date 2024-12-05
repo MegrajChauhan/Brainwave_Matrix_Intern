@@ -25,6 +25,8 @@ namespace API
 
     bool withdraw(double amount);
 
+    std::string get_username();
+
     bool deposit(double amount);
 
     bool transfer(accnum_t target_accnum, double amount);

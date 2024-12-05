@@ -79,11 +79,6 @@ void atm::reverse_secret()
     secret_entered = !secret_entered;
 }
 
-void atm::add_command(std::string command_string, std::string command_desc)
-{
-    all_commands[command_string] = command_desc;
-}
-
 void atm::up_arrow()
 {
     if (history.empty() || place_in_history == 0)

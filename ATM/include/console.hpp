@@ -43,6 +43,7 @@ namespace atm
 
         // Which index to which to show
         Viewport viewport;
+        size_t st_ind = 0;
 
     public:
         Console() = default;

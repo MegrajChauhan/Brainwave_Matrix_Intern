@@ -93,3 +93,11 @@ std::vector<accounts::Transaction> accounts::User::get_transaction_history()
 {
     return all_transaction;
 }
+
+accnum_t accounts::User::get_accnum() { return account_number; }
+
+std::time_t accounts::User::get_doc() { return date_of_creation; }
+
+accounts::__account_t accounts::User::get_account_type() { return type; }
+
+std::string accounts::User::get_username() { return user_name; }
