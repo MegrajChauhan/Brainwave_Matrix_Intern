@@ -147,6 +147,7 @@ void atm::Console::flush()
 {
     first_line.erase();
     body.erase(body.begin(), body.end());
+    update_viewport();
 }
 
 int atm::Console::get_console_rows()
@@ -182,7 +183,7 @@ void atm::handle_resize(int rows)
 void atm::Console::update_viewport()
 {
     int row_count = __console.get_console_rows();
-
+    viewport.st = 0;
     viewport.ed = row_count - 1;
     // we don't do anything else here
 }
@@ -191,6 +192,7 @@ void atm::Console::flush_body()
 {
     body.erase(body.begin(), body.end());
     update_viewport();
+    st_ind = 0;
 }
 
 void atm::Console::setup_resize_handler()

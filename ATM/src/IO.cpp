@@ -26,8 +26,38 @@ std::string atm::input_no_show()
 {
     Console *c = console();
     current_input.erase();
-    char current = getc();
-    return {current};
+    fflush(stdin);
+    bool terminate = false;
+    while (!terminate)
+    {
+        char current = getc();
+        switch (current)
+        {
+#ifdef _WIN32
+        case '\b':
+#else
+        case 127:
+#endif
+            if (!current_input.empty())
+                current_input.pop_back();
+            break;
+#ifdef _WIN32
+        case 224:
+#else
+        case 27:
+#endif
+        {
+            handle_escape_sequence();
+            break;
+        }
+        default:
+            current_input += current;
+            terminate = true;
+            break;
+        }
+        c->render();
+    }
+    return current_input;
 }
 
 std::string atm::input()
@@ -36,6 +66,7 @@ std::string atm::input()
     c->flush_first_line(); // clear the old input first
     current_input.erase();
     c->print_to_first_line(">>> ");
+    fflush(stdin);
     c->render();
 
     // DON"T CARE ABOUT DRY PRINCIPLE

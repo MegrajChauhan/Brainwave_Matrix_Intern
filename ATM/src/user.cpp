@@ -140,6 +140,11 @@ void accounts::User::add_transaction(bool sending, double amount, accounts::User
 
 bool accounts::User::transfer(accnum_t receiver, double amount)
 {
+    if (receiver == account_number)
+    {
+        temp_msg = "Cannot transfer money to self";
+        return false;
+    }
     accounts::User other_end = fetch::fetch_user(receiver);
     if (!fetch::fetch_status())
     {

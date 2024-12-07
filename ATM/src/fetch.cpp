@@ -8,6 +8,7 @@ bool fetch::user_exists(accnum_t accnum)
 
 accounts::User fetch::fetch_user(accnum_t accnum)
 {
+    _status = true;
     accounts::User user;
 
     fs::path user_path = fs::current_path() / "users" / std::to_string(accnum);
