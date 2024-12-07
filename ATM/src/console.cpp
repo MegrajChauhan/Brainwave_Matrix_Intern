@@ -190,6 +190,7 @@ void atm::Console::update_viewport()
 void atm::Console::flush_body()
 {
     body.erase(body.begin(), body.end());
+    update_viewport();
 }
 
 void atm::Console::setup_resize_handler()
