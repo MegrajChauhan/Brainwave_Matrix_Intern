@@ -59,6 +59,7 @@ namespace accounts
         __account_t type;
         std::time_t date_of_creation;
         bool logged_on = false;
+        std::string temp_msg;
 
     public:
         User(
@@ -78,11 +79,15 @@ namespace accounts
 
         void add_transaction(Transaction transaction);
 
+        void add_transaction( bool sending, double amount, User &other);
+
         std::time_t get_doc();
 
         __account_t get_account_type();
 
         accnum_t get_accnum();
+
+        bool write_back(); // save the changes
 
         std::string get_username();
 
@@ -90,11 +95,19 @@ namespace accounts
 
         bool is_logged_in();
 
+        size_t get_pin(); // not safe
+
         double get_balance();
 
         bool withdraw(double amount);
 
         bool deposit(double amount);
+
+        double get_lim();
+
+        bool transfer(accnum_t receiver, double amount);
+
+        std::string get_tmp_msg();
 
         std::vector<Transaction> get_transaction_history();
 

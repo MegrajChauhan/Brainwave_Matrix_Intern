@@ -50,6 +50,8 @@ namespace fetch
 
     accounts::User fetch_user(accnum_t accum);
 
+    bool unfetch_user(accounts::User user);
+
     bool fetch_status();
 };
 

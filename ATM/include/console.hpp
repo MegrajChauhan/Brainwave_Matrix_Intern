@@ -99,7 +99,7 @@ namespace atm
     Console *console();
 
 #ifdef _WIN32
-
+    BOOL WINAPI handle_resize(DWORD rows);
 #else
     void handle_resize(int rows);
 #endif

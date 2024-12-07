@@ -43,6 +43,10 @@ namespace API
 
     std::string account_type_to_string(accounts::__account_t type);
 
+    std::string transaction_type_to_string(accounts::__transaction_t type);
+
+    std::string get_tmp_msg();
+
 };
 
 #endif

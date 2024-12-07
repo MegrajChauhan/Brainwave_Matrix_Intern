@@ -170,7 +170,7 @@ int atm::Console::get_console_rows()
 }
 
 #ifdef _WIN32
-
+BOOL WINAPI atm::handle_resize(DWORD rows)
 #else
 void atm::handle_resize(int rows)
 #endif

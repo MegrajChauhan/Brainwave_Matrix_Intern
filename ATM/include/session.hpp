@@ -32,6 +32,12 @@ namespace atm
 
     void atm_print_user_details();
 
+    void atm_withdraw();
+
+    void atm_deposit();
+
+    void atm_transfer();
+
 };
 
 #endif

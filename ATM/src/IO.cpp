@@ -26,44 +26,8 @@ std::string atm::input_no_show()
 {
     Console *c = console();
     current_input.erase();
-    bool terminate = false;
-    while (!terminate)
-    {
-        char current = getc();
-        // c->print_to_rest(std::string("Read character ") + current + "\r");
-        switch (current)
-        {
-        case '\n':
-        case '\r':
-            terminate = true;
-            // This calls for storing it as history
-            history.push_back(current_input);
-            place_in_history = history.size();
-            break;
-#ifdef _WIN32
-        case '\b':
-#else
-        case 127: // DEL
-#endif
-            if (!current_input.empty())
-                current_input.pop_back();
-            break;
-#ifdef _WIN32
-        case 224:
-#else
-        case 27:
-#endif
-        {
-            // escape sequence in Linux
-            handle_escape_sequence();
-            break;
-        }
-        default:
-            current_input += current;
-            break;
-        }
-    }
-    return current_input;
+    char current = getc();
+    return {current};
 }
 
 std::string atm::input()

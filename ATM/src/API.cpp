@@ -18,6 +18,7 @@ bool API::log_out()
 {
     if (current_session.is_logged_in())
     {
+        current_session.write_back();
         current_session.log_out();
         current_session = accounts::User();
         return true;
@@ -56,12 +57,7 @@ bool API::transfer(accnum_t target_accnum, double amount)
 {
     if (current_session.is_logged_in())
     {
-        accounts::User target_user = fetch::fetch_user(target_accnum);
-        if (current_session.withdraw(amount))
-        {
-            target_user.deposit(amount);
-            return true;
-        }
+        return current_session.transfer(target_accnum, amount);
     }
     return false;
 }
@@ -113,4 +109,24 @@ std::string API::account_type_to_string(accounts::__account_t type)
     case accounts::__account_t::__SAVING:
         return "Saving Account";
     }
+}
+
+std::string API::transaction_type_to_string(accounts::__transaction_t type)
+{
+    switch (type)
+    {
+    case accounts::__transaction_t::__DEPOSITING:
+        return "Deposit";
+    case accounts::__transaction_t::__RECEIVING:
+        return "Received";
+    case accounts::__transaction_t::__SENDING:
+        return "Sent";
+    case accounts::__transaction_t::__WITHDRAWING:
+        return "Withdraw";
+    }
+}
+
+std::string API::get_tmp_msg()
+{
+    return session_active()? current_session.get_tmp_msg(): "";
 }

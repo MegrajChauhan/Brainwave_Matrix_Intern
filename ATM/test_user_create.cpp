@@ -9,7 +9,7 @@
 namespace fs = std::filesystem;
 
 // Function to create a user for testing
-void create_user(accnum_t accnum, const std::string &user_name, size_t pin, double balance, accounts::__account_t account_type)
+void create_user(accnum_t accnum, const std::string &user_name, double lim, size_t pin, double balance, accounts::__account_t account_type)
 {
     // Construct user directory path
     fs::path user_path = fs::current_path() / "users" / std::to_string(accnum);
@@ -33,6 +33,7 @@ void create_user(accnum_t accnum, const std::string &user_name, size_t pin, doub
         metadata.write(reinterpret_cast<const char *>(&account_type_byte), sizeof(account_type_byte));
         metadata.write(reinterpret_cast<const char *>(&balance), sizeof(balance));
         metadata.write(reinterpret_cast<const char *>(&pin), sizeof(pin));
+        metadata.write(reinterpret_cast<const char *>(&lim), sizeof(lim));
         metadata.write(reinterpret_cast<const char *>(&username_length), sizeof(username_length));
         metadata.write(user_name.data(), username_length);
         metadata.write(reinterpret_cast<const char *>(&creation_date), sizeof(creation_date));
@@ -44,36 +45,54 @@ void create_user(accnum_t accnum, const std::string &user_name, size_t pin, doub
     // Create Transactions.bin
     fs::path transactions_file = user_path / "Transactions.bin";
     std::ofstream transactions(transactions_file, std::ios::binary);
-    if (transactions)
-    {
-        // Example transaction data for testing
-        std::vector<accounts::Transaction> transaction_list = {
-            accounts::Transaction(accnum, 123456, 50.0, std::time(nullptr), accounts::__transaction_t::__SENDING),
-            accounts::Transaction(123456, accnum, 100.0, std::time(nullptr), accounts::__transaction_t::__RECEIVING)};
-
-        // Write transactions to the file
-        for (const auto &trans : transaction_list)
-        {
-            transactions.write(reinterpret_cast<const char *>(&trans.__sender), sizeof(accnum_t));
-            transactions.write(reinterpret_cast<const char *>(&trans.__receiver), sizeof(accnum_t));
-            transactions.write(reinterpret_cast<const char *>(&trans.__transaction_amount), sizeof(double));
-            uint8_t type_byte = static_cast<uint8_t>(trans.type);
-            transactions.write(reinterpret_cast<const char *>(&type_byte), sizeof(type_byte));
-            transactions.write(reinterpret_cast<const char *>(&trans.__time_of_transaction), sizeof(std::time_t));
-        }
-
-        transactions.close();
-        std::cout << "Transactions created for user: " << user_name << std::endl;
-    }
+    transactions.close();
 }
 
 int main()
 {
-    // Example usage of create_user function
-    create_user(1001, "Alice", 1234, 5000.0, accounts::__account_t::__SAVING);
-    create_user(1002, "Bob", 5678, 3000.0, accounts::__account_t::__CHECKING);
-    create_user(1003, "Charlie", 9876, 10000.0, accounts::__account_t::__BUSINESS_ACCOUNT);
-    create_user(1233, "Pradip", 1100, 10000000000.0, accounts::__account_t::__SAVING);
+    bool continue_creating = true;
+    while (continue_creating)
+    {
+        accnum_t accnum;
+        std::string user_name;
+        double lim;
+        size_t pin;
+        double balance;
+        int account_type_choice;
+
+        std::cout << "Enter Account Number: ";
+        std::cin >> accnum;
+
+        std::cin.ignore(); // Clear input buffer
+        std::cout << "Enter User Name: ";
+        std::getline(std::cin, user_name);
+
+        std::cout << "Enter Transaction Limit: ";
+        std::cin >> lim;
+
+        std::cout << "Enter PIN: ";
+        std::cin >> pin;
+
+        std::cout << "Enter Initial Balance: ";
+        std::cin >> balance;
+
+        std::cout << "Select Account Type (0 - Saving, 1 - Checking, 2 - Business): ";
+        std::cin >> account_type_choice;
+
+        if (account_type_choice > 2 || account_type_choice < 0)        
+        {
+            std::cout << "Invalid account type: Using Saving as default.\n";
+            account_type_choice = 0;
+        }
+        accounts::__account_t account_type = static_cast<accounts::__account_t>(account_type_choice);
+
+        create_user(accnum, user_name, lim, pin, balance, account_type);
+
+        char choice;
+        std::cout << "Do you want to create another user? (y/n): ";
+        std::cin >> choice;
+        continue_creating = (choice == 'y' || choice == 'Y');
+    }
 
     std::cout << "User creation completed." << std::endl;
     return 0;
