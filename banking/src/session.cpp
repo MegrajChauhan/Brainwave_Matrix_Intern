@@ -480,6 +480,6 @@ void bank::bank_register_user()
     // Success
     c->flush_body();
     c->print_to_rest("Registration successful!");
-    c->print_to_rest("Your account number is: " + account_number);
+    c->print_to_rest(std::string("Your account number is: ") + std::to_string(account_number));
     c->render();
 }

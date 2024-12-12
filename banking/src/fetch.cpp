@@ -102,7 +102,7 @@ bool fetch::unfetch_user(accounts::User user)
 #ifdef _WIN32
     fs::path user_path = fs::current_path() / "..\users" / std::to_string(user.get_accnum());
 #else
-    fs::path user_path = fs::current_path() / "users" / std::to_string(user.get_accnum());
+    fs::path user_path = fs::current_path() / "../users" / std::to_string(user.get_accnum());
 #endif
 
     if (!fs::exists(user_path) || !fs::is_directory(user_path))
@@ -113,7 +113,7 @@ bool fetch::unfetch_user(accounts::User user)
     fs::path metadata_file = user_path / "Metadata.bin";
     {
         std::fstream metadata;
-        metadata.open(metadata_file.string(), std::ios::binary | std::ios::out | std::ios::trunc);
+        metadata.open(metadata_file.string(), std::ios::binary | std::ios::out);
         if (!metadata.is_open())
         {
             return false;
@@ -145,7 +145,7 @@ bool fetch::unfetch_user(accounts::User user)
     fs::path transactions_file = user_path / "Transactions.bin";
     {
         std::fstream transactions;
-        transactions.open(transactions_file.string(), std::ios::binary | std::ios::out | std::ios::trunc);
+        transactions.open(transactions_file.string(), std::ios::binary | std::ios::out);
         if (!transactions.is_open())
         {
             return false;
@@ -191,7 +191,7 @@ bool fetch::create_user(accnum_t accnum, std::string name, size_t pin, accounts:
 
     uint8_t account_type_byte = static_cast<uint8_t>(type);
     double initial_balance = 0.0;
-    std::time_t creation_date = std::time(nullptr);
+    std::time_t creation_date =  std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     size_t username_length = name.length();
 
     double limit = type == accounts::__account_t::__SAVING ? 10000 : type == accounts::__account_t::__CHECKING ? 100000
