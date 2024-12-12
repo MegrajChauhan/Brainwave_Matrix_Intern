@@ -98,10 +98,11 @@ bool fetch::fetch_status()
 bool fetch::unfetch_user(accounts::User user)
 {
     _status = true;
+
 #ifdef _WIN32
     fs::path user_path = fs::current_path() / "..\users" / std::to_string(user.get_accnum());
 #else
-    fs::path user_path = fs::current_path() / "../users" / std::to_string(user.get_accnum());
+    fs::path user_path = fs::current_path() / "users" / std::to_string(user.get_accnum());
 #endif
 
     if (!fs::exists(user_path) || !fs::is_directory(user_path))
@@ -168,4 +169,52 @@ bool fetch::unfetch_user(accounts::User user)
     }
 
     return true; // Successfully wrote all changes
+}
+
+bool fetch::create_user(accnum_t accnum, std::string name, size_t pin, accounts::__account_t type)
+{
+#ifdef _WIN32
+    fs::path user_path = fs::current_path() / "..\users" / std::to_string(accnum);
+#else
+    fs::path user_path = fs::current_path() / "../users" / std::to_string(accnum);
+#endif
+
+    if (fs::exists(user_path))
+        return false;
+
+    fs::create_directories(user_path);
+
+    fs::path metadata_file = user_path / "Metadata.bin";
+    std::ofstream metadata(metadata_file.string(), std::ios::binary | std::ios::out);
+    if (!metadata.is_open())
+        return false;
+
+    uint8_t account_type_byte = static_cast<uint8_t>(type);
+    double initial_balance = 0.0;
+    std::time_t creation_date = std::time(nullptr);
+    size_t username_length = name.length();
+
+    double limit = type == accounts::__account_t::__SAVING ? 10000 : type == accounts::__account_t::__CHECKING ? 100000
+                                                                                                               : 900000;
+
+    metadata.write(reinterpret_cast<const char *>(&account_type_byte), sizeof(account_type_byte));
+    metadata.write(reinterpret_cast<const char *>(&initial_balance), sizeof(initial_balance));
+    metadata.write(reinterpret_cast<const char *>(&pin), sizeof(pin));
+
+    metadata.write(reinterpret_cast<const char *>(&limit), sizeof(double));
+
+    metadata.write(reinterpret_cast<const char *>(&username_length), sizeof(username_length));
+    metadata.write(name.c_str(), username_length);
+    metadata.write(reinterpret_cast<const char *>(&creation_date), sizeof(creation_date));
+
+    metadata.close();
+
+    fs::path transactions_file = user_path / "Transactions.bin";
+    std::ofstream transactions(transactions_file.string(), std::ios::binary | std::ios::out);
+    if (!transactions.is_open())
+        return false;
+
+    transactions.close();
+
+    return true;
 }
