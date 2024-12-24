@@ -50,11 +50,17 @@ namespace fetch
 
     accounts::User fetch_user(accnum_t accum);
 
-    bool unfetch_user(accounts::User user);
+    bool unfetch_user(accounts::User *user);
 
     bool fetch_status();
 
+    accounts::User fetch_user(std::string metadata, std::string transaction, accnum_t acc);
+
     bool create_user(accnum_t accnum, std::string name, size_t pin, accounts::__account_t type);
+
+    bool fetch_user_metadata(accnum_t accnum, std::string *buf);
+
+    bool fetch_user_transaction(accnum_t accnum, std::string *buf);
 };
 
 #endif

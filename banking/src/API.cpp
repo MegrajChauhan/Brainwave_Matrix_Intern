@@ -2,23 +2,52 @@
 
 bool API::log_in(accnum_t accnum, size_t pin)
 {
-    accounts::User user = fetch::fetch_user(accnum);
-    if (!fetch::fetch_status())
-        return false;
-    if (user.log_in(pin))
+    bank::msg m;
+    m.as_long1 = 0, m.as_long2 = 0;
+    m.as_long1 = _LOGIN;
+    m.as_long1 <<= 56;
+    m.as_long1 |= (pin & 0xFFFF);
+    m.as_long2 = accnum;
+    bank::send_msg(m);
+    std::string reply = bank::get_reply();
+    if (reply[0] != (char)_SUCCESS)
     {
-        current_session = user;
-        return true;
+        handle_failure((serverReply_t)reply[0]);
+        return false;
     }
 
-    return false;
+    m.as_long1 = _GET_METADATA;
+    m.as_long1 <<= 56;
+    bank::send_msg(m);
+    std::string metadata = bank::get_reply();
+
+    m.as_long1 = _GET_TRANSACTION;
+    m.as_long1 <<= 56;
+    bank::send_msg(m);
+    std::string transaction = bank::get_reply();
+
+    accounts::User user = fetch::fetch_user(metadata, transaction, accnum);
+    if (!fetch::fetch_status())
+        return false;
+    user.log_in(pin);
+    current_session = user;
+    if(metadata.length() < 1){
+        err_msg="no metadata";
+        return false;
+    }
+    return true;
 }
 
 bool API::log_out()
 {
+    bank::msg m;
+    m.as_long1 = 0, m.as_long2 = 0;
     if (current_session.is_logged_in())
     {
-        current_session.write_back();
+        m.as_bytes[7] = _LOGOUT;
+        m.as_long2 = current_session.get_accnum();
+        bank::send_msg(m);
+        std::string tmp = bank::get_reply();
         current_session.log_out();
         current_session = accounts::User();
         return true;
@@ -39,6 +68,19 @@ bool API::withdraw(double amount)
 {
     if (current_session.is_logged_in())
     {
+        bank::msg m;
+        m.as_long1 = 0, m.as_long2 = 0;
+        m.as_bytes[7] = _WITHDRAW;
+        m.as_long2 = current_session.get_accnum();
+        bank::send_msg(m);
+        m.as_long1 = amount;
+        bank::send_msg(m);
+        std::string temp = bank::get_reply();
+        if (temp[0] != (char)_SUCCESS)
+        {
+            handle_failure((serverReply_t)temp[0]);
+            return false;
+        }
         return current_session.withdraw(amount);
     }
     return false;
@@ -48,6 +90,18 @@ bool API::deposit(double amount)
 {
     if (current_session.is_logged_in())
     {
+        bank::msg m;
+        m.as_bytes[7] = _DEPOSIT;
+        m.as_long2 = current_session.get_accnum();
+        bank::send_msg(m);
+        m.as_long1 = amount;
+        bank::send_msg(m);
+        std::string temp = bank::get_reply();
+        if (temp[0] != (char)_SUCCESS)
+        {
+            handle_failure((serverReply_t)temp[0]);
+            return false;
+        }
         return current_session.deposit(amount);
     }
     return false;
@@ -57,7 +111,20 @@ bool API::transfer(accnum_t target_accnum, double amount)
 {
     if (current_session.is_logged_in())
     {
-        return current_session.transfer(target_accnum, amount);
+        bank::msg m;
+        m.as_bytes[7] = _TRANSFER;
+        m.as_long2 = current_session.get_accnum();
+        bank::send_msg(m);
+        m.as_long1 = target_accnum;
+        m.as_long2 = amount;
+        bank::send_msg(m);
+        std::string temp = bank::get_reply();
+        if (temp[0] != (char)_SUCCESS)
+        {
+            handle_failure((serverReply_t)temp[0]);
+            return false;
+        }
+        return current_session.transfer_simple(target_accnum, amount);
     }
     return false;
 }
@@ -131,7 +198,57 @@ std::string API::get_tmp_msg()
     return session_active() ? current_session.get_tmp_msg() : "";
 }
 
-bool API::register_user(accnum_t accnum, std::string name, size_t pin, accounts::__account_t type)
+bool API::register_user(accnum_t *accnum, std::string name, size_t pin, accounts::__account_t type)
 {
-    return fetch::create_user(accnum, name, pin, type);
+    bank::msg m;
+    m.as_long1 = 0, m.as_long2 = 0;
+    m.as_long1 = _REGISTER;
+    m.as_long1 <<= 8;
+    m.as_long1 |= type;
+    m.as_long1 <<= 32;
+    m.as_long1 |= (name.length() & 0xFFFF);
+    m.as_long1 <<= 16;
+    m.as_long1 |= (pin & 0xFFFF);
+    bank::send_msg(m);
+    bank::send_raw(name);
+    std::string temp = bank::get_reply();
+    if (temp[0] != (char)_SUCCESS)
+    {
+        handle_failure((serverReply_t)temp[0]);
+        return false;
+    }
+    *accnum = std::strtoull(temp.c_str() + 1, nullptr, 10);
+    return true;
+}
+
+void API::handle_failure(serverReply_t r)
+{
+    switch (r)
+    {
+    case serverReply_t::_ALREADY_LOGIN:
+        err_msg = "The user is already logged on.";
+        break;
+    case serverReply_t::_USER_EXISTS:
+        err_msg = "The user already exists";
+        break;
+    case serverReply_t::_INCORRECT_PIN:
+        err_msg = "The given PIN is invalid";
+        break;
+    case serverReply_t::_NOT_LOGGED_ON:
+        err_msg = "The user is not logged on to perform this action";
+        break;
+    case serverReply_t::_ERROR:
+        err_msg = "Server encountered error....";
+        break;
+    }
+}
+
+std::string API::get_error_msg()
+{
+    return err_msg;
+}
+
+std::string API::get_error()
+{
+    return err_msg.empty() ? current_session.get_tmp_msg() : err_msg;
 }

@@ -11,11 +11,14 @@
 #include <string>
 #include "user.hpp"
 #include "fetch.hpp"
+#include "client.hpp"
+#include "defs.hpp"
 
 namespace API
 {
     // The API will also act as a context and hold the current session
     static accounts::User current_session;
+    static std::string err_msg;
 
     bool log_in(accnum_t accnum, size_t pin);
     
@@ -35,6 +38,10 @@ namespace API
 
     bool withdraw(double amount);
 
+    std::string get_error_msg();
+
+    void handle_failure(serverReply_t r);
+
     bool deposit(double amount);
 
     bool transfer(accnum_t target_accnum, double amount);
@@ -47,7 +54,9 @@ namespace API
 
     std::string get_tmp_msg();
 
-    bool register_user(accnum_t accnum, std::string name, size_t pin, accounts::__account_t type);
+    std::string get_error();
+
+    bool register_user(accnum_t *accnum, std::string name, size_t pin, accounts::__account_t type);
 
 };
 

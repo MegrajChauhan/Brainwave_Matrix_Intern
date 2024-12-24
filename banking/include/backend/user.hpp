@@ -6,6 +6,8 @@
 #include <chrono>
 #include <vector>
 #include <fstream>
+#include <random>
+#include <chrono>
 
 /**
  * Despite the name, this actually represents different accounts
@@ -18,6 +20,8 @@
 
 namespace accounts
 {
+        unsigned long long generate_account_number();
+
     enum __account_t
     {
         __SAVING,
@@ -103,9 +107,13 @@ namespace accounts
 
         bool deposit(double amount);
 
+        bool confirm(size_t pin);
+
         double get_lim();
 
         bool transfer(accnum_t receiver, double amount);
+
+        bool transfer_simple(accnum_t receiver, double amount);
 
         std::string get_tmp_msg();
 

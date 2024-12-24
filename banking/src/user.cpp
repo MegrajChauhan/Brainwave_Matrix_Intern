@@ -107,6 +107,7 @@ void accounts::User::add_transaction(double amount, bool sending, accnum_t other
         _t.type = __RECEIVING;
         all_transaction.push_back(_t);
     }
+    other_end.write_back();
 }
 
 void accounts::User::add_transaction(bool sending, double amount, accounts::User &other)
@@ -136,6 +137,7 @@ void accounts::User::add_transaction(bool sending, double amount, accounts::User
         _t.type = __RECEIVING;
         all_transaction.push_back(_t);
     }
+    other.write_back();
 }
 
 bool accounts::User::transfer(accnum_t receiver, double amount)
@@ -173,7 +175,39 @@ bool accounts::User::transfer(accnum_t receiver, double amount)
     _t.__sender = account_number;
     other_end.add_transaction(_t);
     other_end.current_balance += amount;
-    fetch::unfetch_user(other_end);
+    other_end.write_back();
+
+    return true;
+}
+
+bool accounts::User::transfer_simple(accnum_t receiver, double amount)
+{
+    if (receiver == account_number)
+    {
+        temp_msg = "Cannot transfer money to self";
+        return false;
+    }
+    if (!fetch::fetch_status())
+    {
+        return false;
+    }
+    if (amount > transaction_limit)
+    {
+        temp_msg = "Transaction Limit crossed";
+        return false;
+    }
+    if (amount > current_balance)
+    {
+        temp_msg = "Insufficient Balance";
+        return false;
+    }
+    Transaction _t;
+    _t.type = __SENDING;
+    _t.__receiver = receiver;
+    _t.__transaction_amount = amount;
+    _t.__time_of_transaction = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    all_transaction.push_back(_t);
+    current_balance -= amount;
 
     return true;
 }
@@ -193,7 +227,7 @@ std::string accounts::User::get_username() { return user_name; }
 
 bool accounts::User::write_back()
 {
-    return fetch::unfetch_user(*this);
+    return fetch::unfetch_user(this);
 }
 
 size_t accounts::User::get_pin()
@@ -204,4 +238,27 @@ size_t accounts::User::get_pin()
 std::string accounts::User::get_tmp_msg()
 {
     return temp_msg;
+}
+
+bool accounts::User::confirm(size_t pin)
+{
+    return user_pin == pin;
+}
+
+// Function to generate a unique account number
+unsigned long long accounts::generate_account_number()
+{
+    auto now = std::chrono::system_clock::now();
+    auto duration = now.time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+    std::mt19937 rng(static_cast<unsigned>(millis));
+
+    std::uniform_int_distribution<int> dist(1000, 9999);
+    int random_component = dist(rng);
+
+    std::stringstream ss;
+    ss << millis << random_component;
+
+    return std::strtoull(ss.str().c_str(), nullptr, 10);
 }

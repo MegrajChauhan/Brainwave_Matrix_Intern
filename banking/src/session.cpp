@@ -47,6 +47,8 @@ void bank::start_bank()
     while (!terminate)
     {
         command = input();
+        command.erase(std::remove_if(command.begin(), command.end(), ::isspace),
+                command.end());
         if (command == "QUIT" || command == "Q" || command == "q" || command == "quit")
         {
             terminate = true;
@@ -131,6 +133,7 @@ bool bank::bank_login()
     {
         c->flush_body();
         c->print_to_rest("Failed to login!");
+        c->print_to_rest(API::get_error());
         c->render();
         return false;
     }
@@ -313,7 +316,7 @@ void bank::bank_deposit()
     {
         c->flush_body();
         c->print_to_rest("Failed to deposit....");
-        c->print_to_rest(API::get_tmp_msg());
+        c->print_to_rest(API::get_error());
         c->render();
         return;
     }
@@ -348,7 +351,7 @@ void bank::bank_withdraw()
     {
         c->flush_body();
         c->print_to_rest("Failed to withdraw....");
-        c->print_to_rest(API::get_tmp_msg());
+        c->print_to_rest(API::get_error());
         c->render();
         return;
     }
@@ -392,7 +395,7 @@ void bank::bank_transfer()
     {
         c->flush_body();
         c->print_to_rest("Failed to transfer....");
-        c->print_to_rest(API::get_tmp_msg());
+        c->print_to_rest(API::get_error());
         c->render();
         return;
     }
@@ -400,24 +403,6 @@ void bank::bank_transfer()
     c->print_to_rest("Transfer successful!");
     c->print_to_rest("Use the status command to confirm!");
     c->render();
-}
-
-// Function to generate a unique account number
-unsigned long long bank::generate_account_number()
-{
-    auto now = std::chrono::system_clock::now();
-    auto duration = now.time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-
-    std::mt19937 rng(static_cast<unsigned>(millis));
-
-    std::uniform_int_distribution<int> dist(1000, 9999);
-    int random_component = dist(rng);
-
-    std::stringstream ss;
-    ss << millis << random_component;
-
-    return std::strtoull(ss.str().c_str(), nullptr, 10);
 }
 
 void bank::bank_register_user()
@@ -439,7 +424,7 @@ void bank::bank_register_user()
         }
     } while (pin.size() != 4 || !std::all_of(pin.begin(), pin.end(), ::isdigit));
 
-    accnum_t account_number = generate_account_number();
+    accnum_t account_number;
 
     std::string acc_type;
     c->print_to_rest("Enter the type of account(0: Savings, 1: Checking. 2: Business): ");
@@ -468,11 +453,11 @@ void bank::bank_register_user()
         }
     } while (true);
 
-    if (!API::register_user(account_number, name, std::stoul(pin), t))
+    if (!API::register_user(&account_number, name, std::stoul(pin), t))
     {
         c->flush_body();
         c->print_to_rest("Failed to register user. Try again later.");
-        c->print_to_rest(API::get_tmp_msg());
+        c->print_to_rest(API::get_error());
         c->render();
         return;
     }

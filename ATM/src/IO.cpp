@@ -81,7 +81,8 @@ std::string atm::input()
         case '\r':
             terminate = true;
             // This calls for storing it as history
-            history.push_back(current_input);
+            if (!secret_entered)
+                history.push_back(current_input);
             place_in_history = history.size();
             break;
 #ifdef _WIN32
@@ -89,7 +90,7 @@ std::string atm::input()
 #else
         case 127: // DEL
 #endif
-            if (!secret_entered)
+            if (!current_input.empty())
                 c->remove_from_fist_line();
             if (!current_input.empty())
                 current_input.pop_back();
@@ -108,6 +109,8 @@ std::string atm::input()
             current_input += current;
             if (!secret_entered)
                 c->print_to_first_line(current);
+            else
+                c->print_to_first_line('*');
             break;
         }
         c->render();

@@ -9,6 +9,7 @@
 #include "console.hpp"
 #include "API.hpp"
 #include "IO.hpp"
+#include "client.hpp"
 #include <random>
 #include <sstream>
 #include <algorithm>
@@ -43,8 +44,6 @@ namespace bank
     void bank_deposit();
 
     void bank_transfer();
-
-    unsigned long long generate_account_number();
 
 };
 

@@ -12,9 +12,9 @@ accounts::User fetch::fetch_user(accnum_t accnum)
     accounts::User user;
 
 #ifdef _WIN32
-    fs::path user_path = fs::current_path() / "..\users" / std::to_string(accnum);
+    fs::path user_path = fs::current_path() / "..\atm_users"/ std::to_string(accnum);
 #else
-    fs::path user_path = fs::current_path() / "../users" / std::to_string(accnum);
+    fs::path user_path = fs::current_path() / "../atm_users" / std::to_string(accnum);
 #endif
     if (!fs::exists(user_path) || !fs::is_directory(user_path))
     {
@@ -99,9 +99,9 @@ bool fetch::unfetch_user(accounts::User user)
 {
     _status = true;
 #ifdef _WIN32
-    fs::path user_path = fs::current_path() / "..\users" / std::to_string(user.get_accnum());
+    fs::path user_path = fs::current_path() / "..\atm_users"/ std::to_string(user.get_accnum());
 #else
-    fs::path user_path = fs::current_path() / "../users" / std::to_string(user.get_accnum());
+    fs::path user_path = fs::current_path() / "../atm_users" / std::to_string(user.get_accnum());
 #endif
 
     if (!fs::exists(user_path) || !fs::is_directory(user_path))
